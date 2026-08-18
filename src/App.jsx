@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import Explore from "./components/Explore";
 import Search from "./components/Search";
 
 function App() {
@@ -9,7 +10,6 @@ function App() {
   function handleSearch(query) {
     setSearchQuery(query);
 
-    // Wait for the search section to render
     setTimeout(() => {
       document
         .getElementById("search-results")
@@ -30,11 +30,11 @@ function App() {
       {/* Hero */}
       <Hero />
 
-      {/* Search Results */}
-      {searchQuery && (
-        <div id="search-results">
-          <Search query={searchQuery} />
-        </div>
+      {/* Explore / Search */}
+      {searchQuery ? (
+        <Search query={searchQuery} />
+      ) : (
+        <Explore />
       )}
     </div>
   );
