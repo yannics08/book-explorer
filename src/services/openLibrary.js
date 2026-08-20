@@ -1,8 +1,6 @@
 export async function searchBooks(query) {
   const response = await fetch(
-    `https://openlibrary.org/search.json?q=${encodeURIComponent(
-      query
-    )}&limit=20`
+    `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=20`
   );
 
   if (!response.ok) {
@@ -10,10 +8,8 @@ export async function searchBooks(query) {
   }
 
   const data = await response.json();
-
   return data.docs;
 }
-
 
 export async function getTrendingBooks() {
   const response = await fetch(
@@ -29,13 +25,11 @@ export async function getTrendingBooks() {
   return data.works.map((book) => ({
     key: book.key,
     title: book.title,
-    author_name:
-      book.author_name || [],
+    author_name: book.author_name || [],
     cover_i: book.cover_i,
     first_publish_year: book.first_publish_year,
   }));
 }
-
 
 export async function getWorkDetails(workKey) {
   const response = await fetch(
@@ -49,8 +43,7 @@ export async function getWorkDetails(workKey) {
   return response.json();
 }
 
-
-export function coverUrl(coverId, size = "M") {
+export function coverUrl(coverId, size = "L") {
   if (!coverId) return null;
 
   return `https://covers.openlibrary.org/b/id/${coverId}-${size}.jpg`;

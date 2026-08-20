@@ -1,37 +1,38 @@
 import { useEffect, useState } from "react";
-import { X, BookOpen, Layers, Tag } from "lucide-react";
+import {
+  X,
+  Calendar,
+  Building2,
+  Languages,
+  BookOpen,
+  Star,
+} from "lucide-react";
 import { coverUrl, getWorkDetails } from "../services/openLibrary";
 
 function BookDetails({ book, onClose }) {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (!book) return;
 
     let cancelled = false;
 
-    setLoading(true);
-    setError(null);
-    setDetails(null);
+    async function load() {
+      setLoading(true);
 
-    getWorkDetails(book.key)
-      .then((data) => {
-        if (!cancelled) {
-          setDetails(data);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err.message);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
+      try {
+        const data = await getWorkDetails(book.key);
+        if (!cancelled) setDetails(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
 
     return () => {
       cancelled = true;
@@ -43,112 +44,161 @@ function BookDetails({ book, onClose }) {
   const description =
     typeof details?.description === "string"
       ? details.description
-      : details?.description?.value || null;
-
-  const subjects =
-    details?.subjects?.slice(0, 8) ||
-    book.subject?.slice(0, 8) ||
-    [];
+      : details?.description?.value || "No description available.";
 
   const cover = coverUrl(book.cover_i, "L");
 
+  const publishDate =
+    details?.first_publish_date ||
+    book.first_publish_year ||
+    "Unknown";
+
+  const publisher =
+    book.publisher?.[0] ||
+    details?.publishers?.[0] ||
+    "Unknown";
+
+  const language =
+    book.language?.[0] ||
+    details?.languages?.[0]?.key?.split("/")?.pop()?.toUpperCase() ||
+    "Unknown";
+
+  const pages =
+    details?.number_of_pages ||
+    book.number_of_pages_median ||
+    "Unknown";
+
+  const rating =
+    book.ratings_average?.toFixed(1) || "N/A";
+
+  const subjects =
+    details?.subjects?.slice(0, 10) ||
+    book.subject?.slice(0, 10) ||
+    [];
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6"
       onClick={onClose}
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-[#F7F4EA] p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl bg-[#F7F4EA] p-8 shadow-2xl"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 rounded-full p-2 text-[#5B5A52] transition hover:bg-[#E4DFCF] hover:text-[#1B1B18]"
+          className="absolute right-6 top-6 rounded-full p-2 text-[#5B5A52] hover:bg-black/5"
         >
           <X size={22} />
         </button>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[220px_1fr]">
-          
-          {/* Book Cover */}
-          <div className="relative">
-            <div className="absolute inset-0 translate-x-3 translate-y-3 rounded-lg bg-[#DFD9C6]" />
-
+        <div className="grid gap-10 md:grid-cols-[240px_1fr]">
+          {/* LEFT SIDE */}
+          <div>
             {cover ? (
               <img
                 src={cover}
                 alt={book.title}
-                className="relative h-[300px] w-[220px] rounded-lg object-cover shadow-md"
+                className="w-full rounded-xl shadow-lg"
               />
             ) : (
-              <div className="relative flex h-[300px] w-[220px] items-center justify-center rounded-lg bg-[#E4DFCF] text-sm text-[#8C8A80]">
-                No cover available
+              <div className="aspect-[2/3] w-full rounded-xl bg-stone-200 flex items-center justify-center text-stone-500">
+                No Cover
               </div>
             )}
+
+            <a
+              href={`https://openlibrary.org${book.key}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#2D3142] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#1F2330]"
+            >
+              View on Open Library
+            </a>
           </div>
 
-          {/* Book Information */}
-          <div className="pr-6">
-            <h1 className="font-serif text-3xl leading-tight text-[#1B1B18]">
+          {/* RIGHT SIDE */}
+          <div>
+            {/* Title */}
+            <h1 className="font-serif text-4xl leading-tight text-[#1B1B18]">
               {book.title}
             </h1>
 
-            <p className="mt-2 text-lg text-[#1B1B18]">
-              {book.author_name?.join(", ") || "Unknown author"}
+            {/* Author */}
+            <p className="mt-2 text-lg text-[#5B5A52]">
+              by {book.author_name?.join(", ") || "Unknown Author"}
             </p>
 
-            <p className="mt-1 text-sm text-[#8C8A80]">
-              First published{" "}
-              {book.first_publish_year || "unknown"}
-            </p>
-
-            {/* Edition Count */}
-            <div className="mt-6">
-              <div className="inline-flex items-center gap-2 rounded-lg border border-[#E4DFCF] bg-white/50 px-3 py-2 text-sm text-[#5B5A52]">
-                <Layers size={15} />
-
-                {book.edition_count
-                  ? `${book.edition_count} edition${
-                      book.edition_count === 1 ? "" : "s"
-                    }`
-                  : "Edition count unknown"}
-              </div>
+            {/* Rating */}
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-amber-700">
+              <Star size={16} fill="currentColor" />
+              <span className="font-semibold">{rating}</span>
             </div>
 
             {/* Description */}
-            <div className="mt-7">
-              <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#1B1B18]">
-                <BookOpen size={15} />
+            <div className="mt-8">
+              <h2 className="mb-2 text-sm font-semibold text-[#1B1B18]">
                 Description
               </h2>
 
-              {loading && (
+              {loading ? (
                 <p className="text-sm text-[#8C8A80]">
                   Loading description...
                 </p>
-              )}
+              ) : (
+                <>
+                  <p
+                    className={`whitespace-pre-line text-sm leading-7 text-[#5B5A52] ${
+                      expanded ? "" : "line-clamp-4"
+                    }`}
+                  >
+                    {description}
+                  </p>
 
-              {error && (
-                <p className="text-sm text-red-700">
-                  Couldn't load extra details: {error}
-                </p>
+                  {description.length > 220 && (
+                    <button
+                      onClick={() => setExpanded(!expanded)}
+                      className="mt-2 text-sm font-medium text-[#7C5A00] hover:underline"
+                    >
+                      {expanded ? "See less" : "See more"}
+                    </button>
+                  )}
+                </>
               )}
+            </div>
 
-              {!loading && !error && (
-                <p className="whitespace-pre-line text-sm leading-relaxed text-[#5B5A52]">
-                  {description ||
-                    "No description available for this book."}
-                </p>
-              )}
+            {/* Metadata */}
+            <div className="mt-8 grid grid-cols-4 gap-3">
+              <InfoCard
+                icon={<Calendar size={16} />}
+                label="Published"
+                value={publishDate}
+              />
+
+              <InfoCard
+                icon={<Building2 size={16} />}
+                label="Publisher"
+                value={publisher}
+              />
+
+              <InfoCard
+                icon={<Languages size={16} />}
+                label="Language"
+                value={language}
+              />
+
+              <InfoCard
+                icon={<BookOpen size={16} />}
+                label="Pages"
+                value={pages}
+              />
             </div>
 
             {/* Subjects */}
             {subjects.length > 0 && (
-              <div className="mt-7">
-                <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-[#1B1B18]">
-                  <Tag size={15} />
+              <div className="mt-8">
+                <h2 className="mb-3 text-sm font-semibold text-[#1B1B18]">
                   Subjects
                 </h2>
 
@@ -156,7 +206,7 @@ function BookDetails({ book, onClose }) {
                   {subjects.map((subject) => (
                     <span
                       key={subject}
-                      className="rounded-full border border-[#E4DFCF] bg-white/50 px-3 py-1 text-xs text-[#5B5A52]"
+                      className="rounded-full border border-[#E4DFCF] bg-white/60 px-3 py-1 text-xs text-[#5B5A52]"
                     >
                       {subject}
                     </span>
@@ -167,6 +217,23 @@ function BookDetails({ book, onClose }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function InfoCard({ icon, label, value }) {
+  return (
+    <div className="rounded-xl border border-[#E6DFCF] bg-white/70 p-3">
+      <div className="mb-2 flex items-center gap-1 text-[#8C8A80]">
+        {icon}
+        <span className="text-[10px] uppercase tracking-wide">
+          {label}
+        </span>
+      </div>
+
+      <p className="truncate text-sm font-semibold leading-tight text-[#1B1B18]">
+        {value}
+      </p>
     </div>
   );
 }
