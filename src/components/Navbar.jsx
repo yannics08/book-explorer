@@ -14,10 +14,18 @@ function Navbar({ onSearch }) {
     onSearch(trimmedQuery);
   }
 
+  // Handle logo click to refresh/reload page
+  const handleLogoClick = () => {
+    window.location.reload();
+  };
+
   return (
     <nav className="flex items-center justify-between bg-transparent px-8 py-4 text-white">
-      {/* Logo */}
-      <div className="flex items-center gap-2 text-xl font-semibold">
+      {/* Logo - Click reloads page */}
+      <div 
+        onClick={handleLogoClick}
+        className="flex cursor-pointer items-center gap-2 text-xl font-semibold transition-opacity hover:opacity-80"
+      >
         <BookMarked size={24} />
         <span>Book Explorer</span>
       </div>
