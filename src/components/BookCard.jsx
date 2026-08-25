@@ -9,29 +9,33 @@ function BookCard({ book, onSelect }) {
       {/* Book Cover */}
       <div
         className="
-            relative
-            aspect-[2/3]
-            w-full
-            overflow-hidden
-            rounded-sm
-            bg-gray-100
-            shadow-[8px_10px_18px_rgba(0,0,0,0.25)]
-            transition-all
-            duration-500
-            ease-out
-            group-hover:-translate-y-3
-            group-hover:scale-[1.02]
-            group-hover:shadow-[14px_18px_25px_rgba(0,0,0,0.35)]
-            after:absolute
-            after:left-0
-            after:top-0
-            after:h-full
-            after:w-[7px]
-            after:bg-black/20
-            after:shadow-[2px_0_4px_rgba(0,0,0,0.25)]
-            after:content-['']
+          relative
+          aspect-[2/3]
+          w-full
+          overflow-hidden
+          rounded-r-sm
+          bg-gray-100
+          shadow-[8px_10px_18px_rgba(0,0,0,0.25)]
+          transition-all
+          duration-500
+          ease-out
+          group-hover:-translate-y-3
+          group-hover:scale-[1.02]
+          group-hover:shadow-[14px_18px_25px_rgba(0,0,0,0.35)]
+
+          /* Spine Crease Overlay */
+          after:pointer-events-none
+          after:absolute
+          after:inset-0
+          after:bg-gradient-to-r
+          after:from-black/40
+          after:via-white/20
+          after:to-transparent
+          after:bg-[length:12px_100%]
+          after:bg-no-repeat
+          after:content-['']
         "
-        >
+      >
         {book.cover_i ? (
           <img
             src={coverUrl(book.cover_i, "M")}

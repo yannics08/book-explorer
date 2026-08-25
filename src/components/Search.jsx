@@ -25,7 +25,7 @@ function Search({ query }) {
         setBooks(results);
       } catch (error) {
         console.error(error);
-        setError("Unable to search for books.");
+        setError("Unable to search for manuscripts.");
       } finally {
         setLoading(false);
       }
@@ -39,32 +39,33 @@ function Search({ query }) {
       {/* Search Section */}
       <section
         id="search-results"
-        className="relative z-10 -mt-16 px-6 pb-16"
+        className="relative z-10 -mt-16 px-6 pb-16 font-serif"
       >
-        <div className="mx-auto max-w-7xl rounded-2xl bg-[#f8f7f2] px-8 py-10 shadow-2xl">
+        {/* Parchment Container with Antique Brass Border */}
+        <div className="mx-auto max-w-7xl rounded-2xl border border-[#c59b27]/30 bg-[#f4f1ea] px-8 py-10 shadow-2xl">
           
           {/* Heading */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[#1B1B18]">
+          <div className="mb-8 border-b border-[#e2dcce] pb-6">
+            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8c6d1f]">
+              Archive Search
+            </span>
+
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-[#1c1917]">
               Search Results
             </h1>
 
-            <p className="mt-2 text-[#5B5A52]">
-              Results for "{query}"
+            <p className="mt-1 text-[#57534e] italic">
+              Displaying catalog entries for "{query}"
             </p>
           </div>
 
           {/* Loading */}
           {loading && (
-            <div className="flex min-h-[400px] flex-col items-center justify-center">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#DFD9C6] border-t-[#5B5A52]" />
+            <div className="flex min-h-[300px] flex-col items-center justify-center">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#e2dcce] border-t-[#8c6d1f]" />
 
-              <p className="mt-5 text-lg font-medium text-[#5B5A52]">
-                Searching for books...
-              </p>
-
-              <p className="mt-1 text-sm text-[#8C8A80]">
-                Finding books for you
+              <p className="mt-4 text-[#57534e] italic text-sm">
+                Searching the archives...
               </p>
             </div>
           )}
@@ -72,7 +73,7 @@ function Search({ query }) {
           {/* Error */}
           {!loading && error && (
             <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-red-500">
+              <p className="text-red-700 italic">
                 {error}
               </p>
             </div>
@@ -83,8 +84,8 @@ function Search({ query }) {
             !error &&
             books.length === 0 && (
               <div className="flex min-h-[300px] items-center justify-center">
-                <p className="text-[#8C8A80]">
-                  No books found for "{query}".
+                <p className="text-[#78716c] italic">
+                  No manuscripts found matching "{query}".
                 </p>
               </div>
             )}

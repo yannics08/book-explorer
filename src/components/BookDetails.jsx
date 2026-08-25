@@ -78,17 +78,17 @@ function BookDetails({ book, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1917]/70 backdrop-blur-md p-6 font-serif"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl bg-[#F7F4EA] p-8 shadow-2xl"
+        className="relative w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl border border-[#c59b27]/40 bg-[#f4f1ea] p-8 shadow-2xl"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-6 top-6 rounded-full p-2 text-[#5B5A52] hover:bg-black/5"
+          className="absolute right-6 top-6 rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5 transition-colors"
         >
           <X size={22} />
         </button>
@@ -100,10 +100,10 @@ function BookDetails({ book, onClose }) {
               <img
                 src={cover}
                 alt={book.title}
-                className="w-full rounded-xl shadow-lg"
+                className="w-full rounded-r-md border border-[#c59b27]/30 shadow-xl"
               />
             ) : (
-              <div className="aspect-[2/3] w-full rounded-xl bg-stone-200 flex items-center justify-center text-stone-500">
+              <div className="aspect-[2/3] w-full rounded-r-md bg-[#e2dcce] border border-[#c59b27]/30 flex items-center justify-center text-[#78716c] italic">
                 No Cover
               </div>
             )}
@@ -112,44 +112,44 @@ function BookDetails({ book, onClose }) {
               href={`https://openlibrary.org${book.key}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#2D3142] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#1F2330]"
+              className="mt-5 flex w-full items-center justify-center rounded-xl border border-[#c59b27]/80 bg-[#1c1917] px-4 py-3 text-xs uppercase tracking-widest font-semibold text-[#c59b27] transition hover:bg-[#c59b27] hover:text-[#1c1917] shadow-md"
             >
-              View on Open Library
+              View in Open Library
             </a>
           </div>
 
           {/* RIGHT SIDE */}
           <div>
             {/* Title */}
-            <h1 className="font-serif text-4xl leading-tight text-[#1B1B18]">
+            <h1 className="text-4xl leading-tight font-bold text-[#1c1917]">
               {book.title}
             </h1>
 
             {/* Author */}
-            <p className="mt-2 text-lg text-[#5B5A52]">
+            <p className="mt-2 text-lg italic text-[#57534e]">
               by {book.author_name?.join(", ") || "Unknown Author"}
             </p>
 
             {/* Rating */}
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-amber-700">
-              <Star size={16} fill="currentColor" />
-              <span className="font-semibold">{rating}</span>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#c59b27]/40 bg-[#c59b27]/10 px-3 py-1 text-[#8c6d1f]">
+              <Star size={16} fill="currentColor" className="text-[#8c6d1f]" />
+              <span className="font-semibold text-sm">{rating}</span>
             </div>
 
             {/* Description */}
             <div className="mt-8">
-              <h2 className="mb-2 text-sm font-semibold text-[#1B1B18]">
-                Description
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
+                Synopsis
               </h2>
 
               {loading ? (
-                <p className="text-sm text-[#8C8A80]">
-                  Loading description...
+                <p className="text-sm italic text-[#78716c]">
+                  Unrolling manuscript details...
                 </p>
               ) : (
                 <>
                   <p
-                    className={`whitespace-pre-line text-sm leading-7 text-[#5B5A52] ${
+                    className={`whitespace-pre-line text-sm leading-7 text-[#44403c] ${
                       expanded ? "" : "line-clamp-4"
                     }`}
                   >
@@ -159,9 +159,9 @@ function BookDetails({ book, onClose }) {
                   {description.length > 220 && (
                     <button
                       onClick={() => setExpanded(!expanded)}
-                      className="mt-2 text-sm font-medium text-[#7C5A00] hover:underline"
+                      className="mt-2 text-sm font-semibold text-[#8c6d1f] hover:underline"
                     >
-                      {expanded ? "See less" : "See more"}
+                      {expanded ? "Collapse synopsis" : "Read full synopsis"}
                     </button>
                   )}
                 </>
@@ -198,7 +198,7 @@ function BookDetails({ book, onClose }) {
             {/* Subjects */}
             {subjects.length > 0 && (
               <div className="mt-8">
-                <h2 className="mb-3 text-sm font-semibold text-[#1B1B18]">
+                <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
                   Subjects
                 </h2>
 
@@ -206,7 +206,7 @@ function BookDetails({ book, onClose }) {
                   {subjects.map((subject) => (
                     <span
                       key={subject}
-                      className="rounded-full border border-[#E4DFCF] bg-white/60 px-3 py-1 text-xs text-[#5B5A52]"
+                      className="rounded-full border border-[#c59b27]/30 bg-[#e2dcce]/50 px-3 py-1 text-xs text-[#44403c]"
                     >
                       {subject}
                     </span>
@@ -223,15 +223,15 @@ function BookDetails({ book, onClose }) {
 
 function InfoCard({ icon, label, value }) {
   return (
-    <div className="rounded-xl border border-[#E6DFCF] bg-white/70 p-3">
-      <div className="mb-2 flex items-center gap-1 text-[#8C8A80]">
+    <div className="rounded-xl border border-[#c59b27]/30 bg-[#e2dcce]/40 p-3">
+      <div className="mb-2 flex items-center gap-1.5 text-[#8c6d1f]">
         {icon}
-        <span className="text-[10px] uppercase tracking-wide">
+        <span className="text-[10px] font-semibold uppercase tracking-widest">
           {label}
         </span>
       </div>
 
-      <p className="truncate text-sm font-semibold leading-tight text-[#1B1B18]">
+      <p className="truncate text-sm font-semibold leading-tight text-[#1c1917]">
         {value}
       </p>
     </div>

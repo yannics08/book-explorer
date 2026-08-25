@@ -29,28 +29,33 @@ function Explore() {
     <>
       <section
         id="explore"
-        className="relative z-10 -mt-16 px-6 pb-16"
+        className="relative z-10 -mt-16 px-6 pb-16 font-serif"
       >
-        <div className="mx-auto max-w-7xl rounded-2xl bg-[#f8f7f2] px-8 py-10 shadow-2xl">
+        {/* Parchment Container with Antique Brass Border */}
+        <div className="mx-auto max-w-7xl rounded-2xl border border-[#c59b27]/30 bg-[#f4f1ea] px-8 py-10 shadow-2xl">
 
           {/* Heading */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[#1B1B18]">
+          <div className="mb-8 border-b border-[#e2dcce] pb-6">
+            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8c6d1f]">
+              Curated Collection
+            </span>
+
+            <h2 className="mt-1 text-3xl font-bold tracking-tight text-[#1c1917]">
               Trending Now
             </h2>
 
-            <p className="mt-2 text-[#5B5A52]">
-              Discover books people are interested in right now.
+            <p className="mt-1 text-[#57534e] italic">
+              Discover manuscripts and literature captivating scholars today.
             </p>
           </div>
 
           {/* Loading */}
           {loading && (
             <div className="flex min-h-[300px] flex-col items-center justify-center">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#DFD9C6] border-t-[#5B5A52]" />
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#e2dcce] border-t-[#8c6d1f]" />
 
-              <p className="mt-4 text-[#5B5A52]">
-                Loading trending books...
+              <p className="mt-4 text-[#57534e] italic text-sm">
+                Unshelving trending manuscripts...
               </p>
             </div>
           )}
@@ -58,13 +63,13 @@ function Explore() {
           {/* Error */}
           {!loading && error && (
             <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-red-500">
+              <p className="text-red-700 italic">
                 {error}
               </p>
             </div>
           )}
 
-          {/* Books */}
+          {/* Books Grid */}
           {!loading && !error && books.length > 0 && (
             <div className="grid grid-cols-2 gap-x-8 gap-y-12 sm:grid-cols-3 lg:grid-cols-5">
               {books.map((book) => (
@@ -80,8 +85,8 @@ function Explore() {
           {/* No books */}
           {!loading && !error && books.length === 0 && (
             <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-[#8C8A80]">
-                No trending books found.
+              <p className="text-[#78716c] italic">
+                No trending manuscripts found in the archives.
               </p>
             </div>
           )}
