@@ -45,17 +45,6 @@ function Hero() {
             Explore timeless literature, rare editions, and scholarly works bound in digital leather.
           </p>
 
-          {/* CTA Button */}
-          <div className="mt-8">
-            <a
-              href="#explore"
-              onClick={scrollToExplore}
-              className="inline-block cursor-pointer border border-[#c59b27] bg-[#1c1917]/80 px-8 py-3 text-xs md:text-sm font-semibold uppercase tracking-widest text-[#c59b27] transition-all hover:bg-[#c59b27] hover:text-[#1c1917] shadow-lg"
-            >
-              Enter The Library
-            </a>
-          </div>
-
         </div>
       </div>
     </section>

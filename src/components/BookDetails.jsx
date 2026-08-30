@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-
-import {
-  X,
-  Calendar,
-  Languages,
-  Library,
-  Star,
-} from "lucide-react";
+import { X, Calendar, Library, Star } from "lucide-react";
 
 import {
   coverUrl,
@@ -37,27 +30,17 @@ function BookDetails({ book, onClose }) {
           coverId: book.cover_i,
         });
 
-        if (!cancelled) {
-          setDetails(data);
-        }
+        if (!cancelled) setDetails(data);
       } catch (err) {
         console.error(err);
-
-        if (!cancelled) {
-          setDetails(null);
-        }
+        if (!cancelled) setDetails(null);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
     load();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => (cancelled = true);
   }, [book]);
 
   useEffect(() => {
@@ -74,41 +57,25 @@ function BookDetails({ book, onClose }) {
           pageSize: EDITIONS_PAGE_SIZE,
         });
 
-        if (!cancelled) {
-          setEditionsData(data);
-        }
+        if (!cancelled) setEditionsData(data);
       } catch (err) {
         console.error(err);
-
-        if (!cancelled) {
-          setEditionsData(null);
-        }
+        if (!cancelled) setEditionsData(null);
       } finally {
-        if (!cancelled) {
-          setEditionsLoading(false);
-        }
+        if (!cancelled) setEditionsLoading(false);
       }
     }
 
     loadEditions();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => (cancelled = true);
   }, [book, editionsOpen, editionsPage]);
 
   if (!book) return null;
 
-  function openEditions() {
-    setEditionsPage(1);
-    setEditionsOpen(true);
-  }
-
   const description =
     typeof details?.description === "string"
       ? details.description
-      : details?.description?.value ||
-        "No description available.";
+      : details?.description?.value || "No description available.";
 
   const cover = coverUrl(book.cover_i, "L");
 
@@ -118,20 +85,8 @@ function BookDetails({ book, onClose }) {
     details?.first_publish_date ||
     "Unknown";
 
-  let language = "Unknown";
-
-  if (details?.edition?.languages?.[0]?.key) {
-    language = details.edition.languages[0].key
-      .split("/")
-      .pop()
-      .toUpperCase();
-  } else if (book.language?.[0]) {
-    language = book.language[0].toUpperCase();
-  } else if (details?.languages?.[0]?.key) {
-    language = details.languages[0].key.split("/").pop().toUpperCase();
-  }
-
-  const editionCount = details?.editionCount ?? book.edition_count ?? null;
+  const editionCount =
+    details?.editionCount ?? book.edition_count ?? null;
 
   const editionsDisplay =
     editionCount != null ? editionCount.toLocaleString() : "Unknown";
@@ -140,153 +95,132 @@ function BookDetails({ book, onClose }) {
     typeof details?.ratingsAverage === "number"
       ? details.ratingsAverage
       : typeof book.ratings_average === "number"
-        ? book.ratings_average
-        : null;
+      ? book.ratings_average
+      : null;
 
   const rating = ratingValue != null ? ratingValue.toFixed(1) : "N/A";
 
   const ratingsCount =
-    typeof details?.ratingsCount === "number" ? details.ratingsCount : null;
+    typeof details?.ratingsCount === "number"
+      ? details.ratingsCount
+      : null;
 
   const subjects =
     details?.subjects?.slice(0, 10) ||
     book.subject?.slice(0, 10) ||
     [];
 
-  // Link to the exact edition we matched (by cover, then by English
-  // language) so "View in Open Library" opens the same book being shown
-  // here, rather than the work page — which redirects to whatever edition
-  // Open Library considers the default, often a different one.
-  const openLibraryUrl = details?.edition?.key
-    ? `https://openlibrary.org${details.edition.key}`
-    : `https://openlibrary.org${book.key}`;
+  function openEditions() {
+    setEditionsPage(1);
+    setEditionsOpen(true);
+  }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1917]/70 p-6 font-serif backdrop-blur-md"
-      onClick={onClose}
-    >
+    <>
       <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-[#c59b27]/40 bg-[#f4f1ea] p-8 shadow-2xl"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1917]/70 p-6 font-serif backdrop-blur-md"
+        onClick={onClose}
       >
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-6 rounded-full p-2 text-[#57534e] transition-colors hover:bg-[#1c1917]/5"
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl border border-[#c59b27]/40 bg-[#f4f1ea] p-8 shadow-2xl"
         >
-          <X size={22} />
-        </button>
+          <button
+            onClick={onClose}
+            className="absolute right-6 top-6 rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
+          >
+            <X size={22} />
+          </button>
 
-        <div className="grid gap-10 md:grid-cols-[240px_1fr]">
-          <div>
-            {cover ? (
-              <img
-                src={cover}
-                alt={book.title}
-                className="w-full rounded-r-md border border-[#c59b27]/30 shadow-xl"
-              />
-            ) : (
-              <div className="flex aspect-[2/3] w-full items-center justify-center rounded-r-md border border-[#c59b27]/30 bg-[#e2dcce] text-[#78716c] italic">
-                No Cover
-              </div>
-            )}
-
-            <a
-              href={openLibraryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-5 flex w-full items-center justify-center rounded-xl border border-[#c59b27]/80 bg-[#1c1917] px-4 py-3 text-xs font-semibold uppercase tracking-widest text-[#c59b27] shadow-md transition hover:bg-[#c59b27] hover:text-[#1c1917]"
-            >
-              View in Open Library
-            </a>
-          </div>
-
-          <div>
-            <h1 className="text-4xl font-bold leading-tight text-[#1c1917]">
-              {book.title}
-            </h1>
-
-            <p className="mt-2 text-lg italic text-[#57534e]">
-              by{" "}
-              {book.author_name?.join(", ") ||
-                "Unknown Author"}
-            </p>
-
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#c59b27]/40 bg-[#c59b27]/10 px-3 py-1 text-[#8c6d1f]">
-              <Star
-                size={16}
-                fill="currentColor"
-                className="text-[#8c6d1f]"
-              />
-
-              <span className="text-sm font-semibold">
-                {rating}
-              </span>
-
-              {ratingsCount != null && (
-                <span className="text-xs text-[#a68a3f]">
-                  ({ratingsCount.toLocaleString()})
-                </span>
-              )}
-            </div>
-
-            <div className="mt-8">
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
-                Synopsis
-              </h2>
-
-              {loading ? (
-                <p className="text-sm italic text-[#78716c]">
-                  Unrolling manuscript details...
-                </p>
+          <div className="grid gap-10 md:grid-cols-[240px_1fr]">
+            {/* Cover */}
+            <div>
+              {cover ? (
+                <img
+                  src={cover}
+                  alt={book.title}
+                  className="w-full rounded-r-md border border-[#c59b27]/30 shadow-xl"
+                />
               ) : (
-                <div className="max-h-48 overflow-y-auto rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 pr-4">
-                  <p className="whitespace-pre-line text-sm leading-7 text-[#44403c]">
-                    {description}
-                  </p>
+                <div className="flex aspect-[2/3] w-full items-center justify-center rounded-r-md border border-[#c59b27]/30 bg-[#e2dcce] text-[#78716c] italic">
+                  No Cover
                 </div>
               )}
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-              <InfoCard
-                icon={<Calendar size={16} />}
-                label="Published"
-                value={publishDate}
-              />
+            {/* Details */}
+            <div>
+              <h1 className="text-4xl font-bold leading-tight text-[#1c1917]">
+                {book.title}
+              </h1>
 
-              <InfoCard
-                icon={<Languages size={16} />}
-                label="Language"
-                value={language}
-              />
+              <p className="mt-2 text-lg italic text-[#57534e]">
+                by {book.author_name?.join(", ") || "Unknown Author"}
+              </p>
 
-              <InfoCard
-                icon={<Library size={16} />}
-                label="Editions"
-                value={editionsDisplay}
-                onClick={editionCount ? openEditions : undefined}
-              />
-            </div>
-
-            {subjects.length > 0 && (
               <div className="mt-8">
-                <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
-                  Subjects
+                <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
+                  Synopsis
                 </h2>
 
-                <div className="flex flex-wrap gap-2">
-                  {subjects.map((subject) => (
-                    <span
-                      key={subject}
-                      className="rounded-full border border-[#c59b27]/30 bg-[#e2dcce]/50 px-3 py-1 text-xs text-[#44403c]"
-                    >
-                      {subject}
-                    </span>
-                  ))}
-                </div>
+                {loading ? (
+                  <p className="text-sm italic text-[#78716c]">
+                    Unrolling manuscript details...
+                  </p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 pr-4">
+                    <p className="whitespace-pre-line text-sm leading-7 text-[#44403c]">
+                      {description}
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Info Cards */}
+              <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
+                <InfoCard
+                  icon={<Calendar size={16} />}
+                  label="First Published Year"
+                  value={publishDate}
+                />
+
+                <InfoCard
+                  icon={<Library size={16} />}
+                  label="Number of Editions"
+                  value={editionsDisplay}
+                  onClick={editionCount ? openEditions : undefined}
+                />
+
+                <InfoCard
+                  icon={<Star size={16} />}
+                  label="Rating"
+                  value={
+                    ratingsCount != null
+                      ? `${rating} (${ratingsCount.toLocaleString()} ratings)`
+                      : rating
+                  }
+                />
+              </div>
+
+              {subjects.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
+                    Subjects
+                  </h2>
+
+                  <div className="flex flex-wrap gap-2">
+                    {subjects.map((subject) => (
+                      <span
+                        key={subject}
+                        className="rounded-full border border-[#c59b27]/30 bg-[#e2dcce]/50 px-3 py-1 text-xs text-[#44403c]"
+                      >
+                        {subject}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -301,15 +235,15 @@ function BookDetails({ book, onClose }) {
             editionsData?.size
               ? Math.ceil(editionsData.size / EDITIONS_PAGE_SIZE)
               : editionCount
-                ? Math.ceil(editionCount / EDITIONS_PAGE_SIZE)
-                : null
+              ? Math.ceil(editionCount / EDITIONS_PAGE_SIZE)
+              : null
           }
           onPrev={() => setEditionsPage((p) => Math.max(1, p - 1))}
           onNext={() => setEditionsPage((p) => p + 1)}
           onClose={() => setEditionsOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -320,12 +254,11 @@ function InfoCard({ icon, label, value, wrap = false, onClick }) {
     <Tag
       onClick={onClick}
       className={`rounded-xl border border-[#c59b27]/30 bg-[#e2dcce]/40 p-3 text-left ${
-        onClick ? "transition-colors hover:bg-[#e2dcce]/70" : ""
+        onClick ? "hover:bg-[#e2dcce]/70 transition-colors" : ""
       }`}
     >
       <div className="mb-2 flex items-center gap-1.5 text-[#8c6d1f]">
         {icon}
-
         <span className="text-[10px] font-semibold uppercase tracking-widest">
           {label}
         </span>
@@ -371,7 +304,7 @@ function EditionsBrowser({
 
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-[#57534e] transition-colors hover:bg-[#1c1917]/5"
+            className="rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
           >
             <X size={20} />
           </button>
@@ -409,7 +342,7 @@ function EditionsBrowser({
                   href={`https://openlibrary.org${entry.key}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 transition-colors hover:bg-[#e2dcce]/50"
+                  className="flex items-center gap-3 rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 hover:bg-[#e2dcce]/50 transition-colors"
                 >
                   {thumb ? (
                     <img
@@ -446,7 +379,7 @@ function EditionsBrowser({
           <button
             onClick={onPrev}
             disabled={editionsPage <= 1}
-            className="rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Previous
           </button>
@@ -459,7 +392,7 @@ function EditionsBrowser({
           <button
             onClick={onNext}
             disabled={totalPages ? editionsPage >= totalPages : false}
-            className="rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
           </button>
