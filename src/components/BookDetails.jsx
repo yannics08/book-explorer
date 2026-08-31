@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Calendar, Library, Star } from "lucide-react";
+import { X, Calendar, Library, Star, ChevronRight, ChevronLeft } from "lucide-react";
 
 import {
   coverUrl,
@@ -151,12 +151,30 @@ function BookDetails({ book, onClose }) {
             {/* Details */}
             <div>
               <h1 className="text-4xl font-bold leading-tight text-[#1c1917]">
-                {book.title}
+                {shortenTitle(book.title, 80)}
               </h1>
 
               <p className="mt-2 text-lg italic text-[#57534e]">
                 by {book.author_name?.join(", ") || "Unknown Author"}
               </p>
+
+              {/* Publish year + Rating */}
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#57534e]">
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={15} className="text-[#8c6d1f]" />
+                  <span>First published in {publishDate}</span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <Star size={15} className="text-[#8c6d1f]" />
+                  <span>
+                    {rating}
+                    {ratingsCount != null
+                      ? ` (${ratingsCount.toLocaleString()} ratings)`
+                      : ""}
+                  </span>
+                </div>
+              </div>
 
               <div className="mt-8">
                 <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#8c6d1f]">
@@ -176,31 +194,26 @@ function BookDetails({ book, onClose }) {
                 )}
               </div>
 
-              {/* Info Cards */}
-              <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3">
-                <InfoCard
-                  icon={<Calendar size={16} />}
-                  label="First Published Year"
-                  value={publishDate}
-                />
+              {/* Browse editions row */}
+              {editionCount != null && (
+                <button
+                  onClick={openEditions}
+                  className="mt-4 flex w-full cursor-pointer items-center gap-4 rounded-xl border border-[#c59b27]/30 bg-[#e2dcce]/30 px-4 py-3 text-left transition-colors hover:bg-[#e2dcce]/60"
+                >
+                  <Library size={20} className="flex-shrink-0 text-[#8c6d1f]" />
 
-                <InfoCard
-                  icon={<Library size={16} />}
-                  label="Number of Editions"
-                  value={editionsDisplay}
-                  onClick={editionCount ? openEditions : undefined}
-                />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-[#1c1917]">
+                      Browse all {editionsDisplay} editions
+                    </p>
+                    <p className="mt-0.5 text-xs text-[#78716c]">
+                      Different publishers, languages &amp; years
+                    </p>
+                  </div>
 
-                <InfoCard
-                  icon={<Star size={16} />}
-                  label="Rating"
-                  value={
-                    ratingsCount != null
-                      ? `${rating} (${ratingsCount.toLocaleString()} ratings)`
-                      : rating
-                  }
-                />
-              </div>
+                  <ChevronRight size={18} className="flex-shrink-0 text-[#8c6d1f]" />
+                </button>
+              )}
 
               {subjects.length > 0 && (
                 <div className="mt-8">
@@ -238,8 +251,8 @@ function BookDetails({ book, onClose }) {
               ? Math.ceil(editionCount / EDITIONS_PAGE_SIZE)
               : null
           }
-          onPrev={() => setEditionsPage((p) => Math.max(1, p - 1))}
-          onNext={() => setEditionsPage((p) => p + 1)}
+          total={editionsData?.size ?? editionCount}
+          onPageChange={setEditionsPage}
           onClose={() => setEditionsOpen(false)}
         />
       )}
@@ -247,32 +260,35 @@ function BookDetails({ book, onClose }) {
   );
 }
 
-function InfoCard({ icon, label, value, wrap = false, onClick }) {
-  const Tag = onClick ? "button" : "div";
+function shortenTitle(title, max = 60) {
+  if (!title) return title;
+  return title.length > max ? `${title.slice(0, max - 1).trimEnd()}…` : title;
+}
 
-  return (
-    <Tag
-      onClick={onClick}
-      className={`rounded-xl border border-[#c59b27]/30 bg-[#e2dcce]/40 p-3 text-left ${
-        onClick ? "hover:bg-[#e2dcce]/70 transition-colors" : ""
-      }`}
-    >
-      <div className="mb-2 flex items-center gap-1.5 text-[#8c6d1f]">
-        {icon}
-        <span className="text-[10px] font-semibold uppercase tracking-widest">
-          {label}
-        </span>
-      </div>
+function getPageItems(current, total) {
+  const items = [];
+  const addRange = (from, to) => {
+    for (let i = from; i <= to; i++) items.push(i);
+  };
 
-      <p
-        className={`text-sm font-semibold leading-tight text-[#1c1917] ${
-          wrap ? "whitespace-normal break-words" : "truncate"
-        }`}
-      >
-        {value}
-      </p>
-    </Tag>
-  );
+  if (total <= 7) {
+    addRange(1, total);
+    return items;
+  }
+
+  items.push(1);
+
+  if (current > 3) items.push("...");
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  addRange(start, end);
+
+  if (current < total - 2) items.push("...");
+
+  items.push(total);
+
+  return items;
 }
 
 function EditionsBrowser({
@@ -281,10 +297,14 @@ function EditionsBrowser({
   editionsLoading,
   editionsPage,
   totalPages,
-  onPrev,
-  onNext,
+  total,
+  onPageChange,
   onClose,
 }) {
+  const rangeStart = total ? (editionsPage - 1) * EDITIONS_PAGE_SIZE + 1 : null;
+  const rangeEnd = total
+    ? Math.min(editionsPage * EDITIONS_PAGE_SIZE, total)
+    : null;
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1c1917]/70 p-6 font-serif backdrop-blur-md"
@@ -297,17 +317,25 @@ function EditionsBrowser({
         onClick={(e) => e.stopPropagation()}
         className="relative flex max-h-[85vh] w-full max-w-2xl flex-col rounded-3xl border border-[#c59b27]/40 bg-[#f4f1ea] p-6 shadow-2xl"
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#1c1917]">
-            Editions of {book.title}
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className="truncate text-lg font-bold text-[#1c1917]">
+            Editions of {shortenTitle(book.title)}
           </h2>
 
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
+            className="flex-shrink-0 rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
           >
             <X size={20} />
           </button>
+        </div>
+
+        <div className="mb-3 border-b border-[#c59b27]/20 pb-3">
+          <span className="text-xs text-[#57534e]">
+            {total
+              ? `Showing ${rangeStart}-${rangeEnd} of ${total.toLocaleString()} editions`
+              : "Showing editions"}
+          </span>
         </div>
 
         <div className="flex-1 space-y-2 overflow-y-auto pr-2">
@@ -336,13 +364,12 @@ function EditionsBrowser({
                 .filter(Boolean)
                 .join(" · ");
 
+              const editionHref = `https://openlibrary.org${entry.key}`;
+
               return (
-                <a
+                <div
                   key={entry.key}
-                  href={`https://openlibrary.org${entry.key}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 hover:bg-[#e2dcce]/50 transition-colors"
+                  className="flex items-center gap-3 rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 transition-colors hover:bg-[#e2dcce]/50"
                 >
                   {thumb ? (
                     <img
@@ -357,15 +384,29 @@ function EditionsBrowser({
                   )}
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[#1c1917]">
-                      {entry.title || book.title}
-                    </p>
+                    <a
+                      href={editionHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block truncate text-sm font-semibold text-[#1c1917] hover:underline"
+                    >
+                      {shortenTitle(entry.title || book.title, 70)}
+                    </a>
 
                     <p className="mt-0.5 text-xs text-[#57534e]">
                       {meta || "No further details"}
                     </p>
                   </div>
-                </a>
+
+                  <a
+                    href={editionHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
+                  >
+                    View
+                  </a>
+                </div>
               );
             })
           ) : (
@@ -375,28 +416,50 @@ function EditionsBrowser({
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-[#c59b27]/20 pt-4">
-          <button
-            onClick={onPrev}
-            disabled={editionsPage <= 1}
-            className="rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Previous
-          </button>
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-center gap-1 border-t border-[#c59b27]/20 pt-4">
+            <button
+              onClick={() => onPageChange(Math.max(1, editionsPage - 1))}
+              disabled={editionsPage <= 1}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={16} />
+            </button>
 
-          <span className="text-xs text-[#57534e]">
-            Page {editionsPage}
-            {totalPages ? ` of ${totalPages}` : ""}
-          </span>
+            {getPageItems(editionsPage, totalPages).map((item, idx) =>
+              item === "..." ? (
+                <span
+                  key={`ellipsis-${idx}`}
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center text-sm tracking-widest text-[#8c6d1f]"
+                >
+                  •••
+                </span>
+              ) : (
+                <button
+                  key={item}
+                  onClick={() => onPageChange(item)}
+                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                    item === editionsPage
+                      ? "bg-[#c59b27]/30 text-[#1c1917]"
+                      : "text-[#57534e] hover:bg-[#c59b27]/10"
+                  }`}
+                >
+                  {item}
+                </button>
+              )
+            )}
 
-          <button
-            onClick={onNext}
-            disabled={totalPages ? editionsPage >= totalPages : false}
-            className="rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
+            <button
+              onClick={() => onPageChange(Math.min(totalPages, editionsPage + 1))}
+              disabled={editionsPage >= totalPages}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Next page"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
