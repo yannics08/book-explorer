@@ -6,10 +6,6 @@ import { searchBooks } from "../services/openLibrary";
 
 const RESULTS_PER_PAGE = 20;
 
-// Builds a windowed page-number list with ellipses:
-// - Near the start: 1, 2, 3, 4, "...", last
-// - In the middle:  1, "...", current-1, current, current+1, "...", last
-// - Near the end:    1, "...", last-3, last-2, last-1, last
 function getPageNumbers(current, total) {
   const items = [];
   const addRange = (from, to) => {
