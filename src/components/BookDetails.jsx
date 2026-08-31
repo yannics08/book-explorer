@@ -16,6 +16,7 @@ function BookDetails({ book, onClose }) {
   const [editionsPage, setEditionsPage] = useState(1);
   const [editionsData, setEditionsData] = useState(null);
   const [editionsLoading, setEditionsLoading] = useState(false);
+  const [coverError, setCoverError] = useState(false);
 
   useEffect(() => {
     if (!book) return;
@@ -41,6 +42,10 @@ function BookDetails({ book, onClose }) {
 
     load();
     return () => (cancelled = true);
+  }, [book]);
+
+  useEffect(() => {
+    setCoverError(false);
   }, [book]);
 
   useEffect(() => {
@@ -78,6 +83,7 @@ function BookDetails({ book, onClose }) {
       : details?.description?.value || "No description available.";
 
   const cover = coverUrl(book.cover_i, "L");
+  const hasCover = Boolean(cover) && !coverError;
 
   const publishDate =
     book.first_publish_year ||
@@ -135,10 +141,11 @@ function BookDetails({ book, onClose }) {
           <div className="grid gap-10 md:grid-cols-[240px_1fr]">
             {/* Cover */}
             <div>
-              {cover ? (
+              {hasCover ? (
                 <img
                   src={cover}
                   alt={book.title}
+                  onError={() => setCoverError(true)}
                   className="w-full rounded-r-md border border-[#c59b27]/30 shadow-xl"
                 />
               ) : (
@@ -371,46 +378,14 @@ function EditionsBrowser({
               const editionHref = `https://openlibrary.org${entry.key}`;
 
               return (
-                <div
+                <EditionRow
                   key={entry.key}
-                  className="flex items-center gap-3 rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 transition-colors hover:bg-[#e2dcce]/50"
-                >
-                  {thumb ? (
-                    <img
-                      src={thumb}
-                      alt=""
-                      className="h-14 w-10 flex-shrink-0 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-10 flex-shrink-0 items-center justify-center rounded bg-[#e2dcce] text-[10px] italic text-[#78716c]">
-                      N/A
-                    </div>
-                  )}
-
-                  <div className="min-w-0 flex-1">
-                    <a
-                      href={editionHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block cursor-pointer truncate text-sm font-semibold text-[#1c1917] hover:underline"
-                    >
-                      {shortenTitle(entry.title || book.title, 70)}
-                    </a>
-
-                    <p className="mt-0.5 text-xs text-[#57534e]">
-                      {meta || "No further details"}
-                    </p>
-                  </div>
-
-                  <a
-                    href={editionHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-shrink-0 cursor-pointer rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
-                  >
-                    View
-                  </a>
-                </div>
+                  entry={entry}
+                  thumb={thumb}
+                  meta={meta}
+                  editionHref={editionHref}
+                  bookTitle={book.title}
+                />
               );
             })
           ) : (
@@ -467,6 +442,52 @@ function EditionsBrowser({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function EditionRow({ entry, thumb, meta, editionHref, bookTitle }) {
+  const [thumbError, setThumbError] = useState(false);
+  const hasThumb = Boolean(thumb) && !thumbError;
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-[#c59b27]/20 bg-[#e2dcce]/20 p-3 transition-colors hover:bg-[#e2dcce]/50">
+      {hasThumb ? (
+        <img
+          src={thumb}
+          alt=""
+          onError={() => setThumbError(true)}
+          className="h-14 w-10 flex-shrink-0 rounded object-cover"
+        />
+      ) : (
+        <div className="flex h-14 w-10 flex-shrink-0 items-center justify-center rounded bg-[#e2dcce] text-[10px] italic text-[#78716c]">
+          N/A
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <a
+          href={editionHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block cursor-pointer truncate text-sm font-semibold text-[#1c1917] hover:underline"
+        >
+          {shortenTitle(entry.title || bookTitle, 70)}
+        </a>
+
+        <p className="mt-0.5 text-xs text-[#57534e]">
+          {meta || "No further details"}
+        </p>
+      </div>
+
+      <a
+        href={editionHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-shrink-0 cursor-pointer rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
+      >
+        View
+      </a>
     </div>
   );
 }

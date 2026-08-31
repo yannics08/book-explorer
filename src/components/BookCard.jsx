@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { coverUrl } from "../services/openLibrary";
 
 function BookCard({ book, onSelect }) {
+  const [imageError, setImageError] = useState(false);
+
+  const hasCover = book.cover_i && !imageError;
+
   return (
     <div
       onClick={() => onSelect(book)}
@@ -36,10 +41,11 @@ function BookCard({ book, onSelect }) {
           after:content-['']
         "
       >
-        {book.cover_i ? (
+        {hasCover ? (
           <img
             src={coverUrl(book.cover_i, "M")}
             alt={book.title}
+            onError={() => setImageError(true)}
             className="h-full w-full object-cover"
           />
         ) : (
