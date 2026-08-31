@@ -127,7 +127,7 @@ function BookDetails({ book, onClose }) {
         >
           <button
             onClick={onClose}
-            className="absolute right-6 top-6 rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
+            className="absolute right-6 top-6 cursor-pointer rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
           >
             <X size={22} />
           </button>
@@ -276,17 +276,21 @@ function getPageItems(current, total) {
     return items;
   }
 
-  items.push(1);
-
-  if (current > 3) items.push("...");
-
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  addRange(start, end);
-
-  if (current < total - 2) items.push("...");
-
-  items.push(total);
+  if (current <= 3) {
+    addRange(1, 4);
+    items.push("...");
+    items.push(total);
+  } else if (current >= total - 2) {
+    items.push(1);
+    items.push("...");
+    addRange(total - 3, total);
+  } else {
+    items.push(1);
+    items.push("...");
+    addRange(current - 1, current + 1);
+    items.push("...");
+    items.push(total);
+  }
 
   return items;
 }
@@ -324,7 +328,7 @@ function EditionsBrowser({
 
           <button
             onClick={onClose}
-            className="flex-shrink-0 rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
+            className="flex-shrink-0 cursor-pointer rounded-full p-2 text-[#57534e] hover:bg-[#1c1917]/5"
           >
             <X size={20} />
           </button>
@@ -388,7 +392,7 @@ function EditionsBrowser({
                       href={editionHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block truncate text-sm font-semibold text-[#1c1917] hover:underline"
+                      className="block cursor-pointer truncate text-sm font-semibold text-[#1c1917] hover:underline"
                     >
                       {shortenTitle(entry.title || book.title, 70)}
                     </a>
@@ -402,7 +406,7 @@ function EditionsBrowser({
                     href={editionHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-shrink-0 rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
+                    className="flex-shrink-0 cursor-pointer rounded-lg border border-[#c59b27]/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
                   >
                     View
                   </a>
@@ -418,14 +422,15 @@ function EditionsBrowser({
 
         {totalPages > 1 && (
           <div className="mt-4 flex items-center justify-center gap-1 border-t border-[#c59b27]/20 pt-4">
-            <button
-              onClick={() => onPageChange(Math.max(1, editionsPage - 1))}
-              disabled={editionsPage <= 1}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-30"
-              aria-label="Previous page"
-            >
-              <ChevronLeft size={16} />
-            </button>
+            {editionsPage > 1 && (
+              <button
+                onClick={() => onPageChange(editionsPage - 1)}
+                className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-[#8c6d1f] hover:bg-[#c59b27]/10"
+                aria-label="Previous page"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
 
             {getPageItems(editionsPage, totalPages).map((item, idx) =>
               item === "..." ? (
@@ -439,7 +444,7 @@ function EditionsBrowser({
                 <button
                   key={item}
                   onClick={() => onPageChange(item)}
-                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                  className={`flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-sm font-bold transition-colors ${
                     item === editionsPage
                       ? "bg-[#c59b27]/30 text-[#1c1917]"
                       : "text-[#57534e] hover:bg-[#c59b27]/10"
@@ -450,14 +455,15 @@ function EditionsBrowser({
               )
             )}
 
-            <button
-              onClick={() => onPageChange(Math.min(totalPages, editionsPage + 1))}
-              disabled={editionsPage >= totalPages}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[#8c6d1f] hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-30"
-              aria-label="Next page"
-            >
-              <ChevronRight size={16} />
-            </button>
+            {editionsPage < totalPages && (
+              <button
+                onClick={() => onPageChange(editionsPage + 1)}
+                className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-[#8c6d1f] hover:bg-[#c59b27]/10"
+                aria-label="Next page"
+              >
+                <ChevronRight size={16} />
+              </button>
+            )}
           </div>
         )}
       </div>

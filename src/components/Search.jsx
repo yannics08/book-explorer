@@ -6,38 +6,38 @@ import { searchBooks } from "../services/openLibrary";
 
 const RESULTS_PER_PAGE = 20;
 
-// Builds a windowed page-number list with ellipses, e.g.
-// [1, 2, 3, 4, "...", 2369] — always shows the first page, the last page,
-// and a few pages around the current one.
+// Builds a windowed page-number list with ellipses:
+// - Near the start: 1, 2, 3, 4, "...", last
+// - In the middle:  1, "...", current-1, current, current+1, "...", last
+// - Near the end:    1, "...", last-3, last-2, last-1, last
 function getPageNumbers(current, total) {
-  const delta = 2;
-  const range = [];
-  const withDots = [];
-  let last;
+  const items = [];
+  const addRange = (from, to) => {
+    for (let i = from; i <= to; i++) items.push(i);
+  };
 
-  for (let i = 1; i <= total; i++) {
-    if (
-      i === 1 ||
-      i === total ||
-      (i >= current - delta && i <= current + delta)
-    ) {
-      range.push(i);
-    }
+  if (total <= 7) {
+    addRange(1, total);
+    return items;
   }
 
-  range.forEach((i) => {
-    if (last !== undefined) {
-      if (i - last === 2) {
-        withDots.push(last + 1);
-      } else if (i - last !== 1) {
-        withDots.push("...");
-      }
-    }
-    withDots.push(i);
-    last = i;
-  });
+  if (current <= 3) {
+    addRange(1, 4);
+    items.push("...");
+    items.push(total);
+  } else if (current >= total - 2) {
+    items.push(1);
+    items.push("...");
+    addRange(total - 3, total);
+  } else {
+    items.push(1);
+    items.push("...");
+    addRange(current - 1, current + 1);
+    items.push("...");
+    items.push(total);
+  }
 
-  return withDots;
+  return items;
 }
 
 function Search({ query }) {
@@ -172,14 +172,15 @@ function Search({ query }) {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="mt-12 flex items-center justify-center gap-2 border-t border-[#e2dcce] pt-8">
-                  <button
-                    onClick={() => goToPage(page - 1)}
-                    disabled={page <= 1}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-30"
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
+                  {page > 1 && (
+                    <button
+                      onClick={() => goToPage(page - 1)}
+                      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                  )}
 
                   {getPageNumbers(page, totalPages).map((item, index) =>
                     item === "..." ? (
@@ -193,7 +194,7 @@ function Search({ query }) {
                       <button
                         key={item}
                         onClick={() => goToPage(item)}
-                        className={`flex h-9 min-w-9 items-center justify-center rounded-full px-2 text-sm font-semibold transition-colors ${
+                        className={`flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-full px-2 text-sm font-semibold transition-colors ${
                           item === page
                             ? "bg-[#e2dcce] text-[#1c1917]"
                             : "text-[#57534e] hover:bg-[#c59b27]/10"
@@ -204,14 +205,15 @@ function Search({ query }) {
                     )
                   )}
 
-                  <button
-                    onClick={() => goToPage(page + 1)}
-                    disabled={page >= totalPages}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10 disabled:cursor-not-allowed disabled:opacity-30"
-                    aria-label="Next page"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
+                  {page < totalPages && (
+                    <button
+                      onClick={() => goToPage(page + 1)}
+                      className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-[#8c6d1f] transition-colors hover:bg-[#c59b27]/10"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  )}
                 </div>
               )}
             </>
